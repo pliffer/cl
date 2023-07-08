@@ -1,33 +1,71 @@
 require('colors');
 
 const inquirer = require('inquirer');
-const opn      = require('opn');
-
-const Logs = global.logs;
-const Util = global.util;
 
 let Cl = {
 
     init(p){
 
-        p.stdin.setEncoding('utf8')
-        p.stdin.on('data', Cl.execute)
+        p.stdin.setEncoding('utf8');
+        p.stdin.on('data', Cl.execute);
+
+        this.prompt();
+
+    },
+
+    prompt() {
+
+        inquirer.prompt([
+
+            {
+              type: 'input',
+              name: 'command',
+              message: '@cl Enter a command:',
+            }
+
+        ]).then((answers) => {
+
+            const { command } = answers;
+            this.execute(command);
+
+        }).catch((error) => {
+            console.error(error);
+        });
 
     },
 
     asking: false,
 
-    ask(msg, f){
+    ask(msg, f) {
 
-        console.log(`@cl ${msg} (yes/no)`);
+        inquirer.prompt([
 
-        Cl.asking = function(){
+            {
+              type: 'confirm',
+              name: 'confirmation',
+              message: `@cl ${msg}`,
+              default: false,
+            }
 
-            f();
+        ]).then((answers) => {
 
-            Cl.asking = false;
+            if (answers.confirmation) {
+              f();
+            } else {
+              // Handle negative confirmation if needed
+            }
+            
+            // Continue prompting after asking
+            this.prompt();
 
-        }
+        }).catch((error) => {
+
+            console.error(error);
+            
+            // Continue prompting after error
+            this.prompt();
+
+        });
 
     },
 
@@ -183,39 +221,9 @@ let Cl = {
 
         },
 
-        'create fake error'(){
-
-            Logs.save('fake error', 'testing');
-
-        },
-
         env(){
 
             console.log(process.env);
-
-        },
-
-        vars(){
-
-            console.log(global.vars)
-
-        },
-
-        checkspace(){
-
-            Util.checkSpace();
-
-        },
-
-        'sync report'(){
-
-            global.sync.report();
-
-        },
-
-        'emit logs'(){
-
-            Logs.sendYesterdayToLunastro();
 
         },
 
@@ -239,5 +247,3 @@ let Cl = {
 }
 
 module.exports = Cl;
-global.cl = Cl;
-
